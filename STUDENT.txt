@@ -1,2 +1,2 @@
-APP_URL=https://yor-story.netlify.app/
+APP_URL=https://yorgalore.github.io/submit2/
 MAP_SERVICE_API_KEY=Tidak pakai
