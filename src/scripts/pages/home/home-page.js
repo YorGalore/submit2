@@ -80,10 +80,17 @@ export default class HomePage {
     let cachedStories = [];
 
     try {
-        const storiesResponse = await getAllStories(); // SW handles SWR caching
+        const storiesResponse = await getAllStories(); 
         if (storiesResponse.error) {
-            throw new Error(storiesResponse.message);
+          if (storiesResponse.message === 'Missing token') {
+                alert('Anda harus login terlebih dahulu.');
+                window.location.hash = '#/login';
+                return; 
+          }
+          
+          throw new Error(storiesResponse.message);
         }
+        
         cachedStories = storiesResponse.listStory;
         
         // Cache data API ke IDB (Kriteria 4 Basic)
@@ -91,13 +98,7 @@ export default class HomePage {
 
     } catch (error) {
       console.warn('Gagal mengambil data dari API, mencoba dari IndexedDB:', error.message);
-      if (error.message === 'Missing token') {
-        alert('Anda harus login terlebih dahulu.');
-        window.location.hash = '#/login';
-        return; 
-      }
-      
-      // Kriteria 3 Advanced: Fallback ke IndexedDB
+
       cachedStories = await StoryIdb.getStories();
       if (cachedStories.length === 0) {
           alert('Anda offline dan tidak ada data yang tersimpan secara lokal.');
@@ -107,15 +108,15 @@ export default class HomePage {
       alert(`Menampilkan ${cachedStories.length} cerita dari mode offline.`);
     }
     
-    // Ambil cerita yang antri untuk sync (opsional, untuk tampilan langsung)
+
     const offlineSyncStories = await StoryIdb.getOfflineStoriesForSync();
     
-    // Gabungkan cerita yang sudah di-cache dengan yang sedang antri sync
+    
     let allStories = [...cachedStories.filter(s => !s.id.startsWith('offline-')), ...offlineSyncStories];
     
     this._displayStories(allStories);
     
-    // Kriteria 4 Skilled: Implementasi Pencarian
+    
     storySearchInput.addEventListener('input', (event) => {
         const query = event.target.value.toLowerCase();
         const filteredStories = allStories.filter(story => 
@@ -127,14 +128,7 @@ export default class HomePage {
   }
 }
 
-    if (storiesResponse.error) {
-      if (storiesResponse.message === 'Missing token') {
-        alert('Anda harus login terlebih dahulu.');
-      }
-      return; 
-    }
-
-    const stories = storiesResponse.listStory;
+  const stories = storiesResponse.listStory;
     const map = L.map('map').setView([-2.5489, 118.0149], 5); // Center Indonesia
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
